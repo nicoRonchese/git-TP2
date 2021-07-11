@@ -1,2 +1,2 @@
 # git-TP2
-#Nicolas Ronchese
+#Nicolas Ronchese Marcotegui

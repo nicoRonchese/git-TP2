@@ -8,7 +8,7 @@ from google.oauth2.credentials import Credentials
 
 SCOPES = [
     'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send'
+    'https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'
 ]
 
 # Archivo generado para la API
@@ -65,4 +65,4 @@ def obtener_servicio() -> Resource:
     Creador de la conexion a la API Gmail
     """
     return build('gmail', 'v1', credentials=generar_credenciales())
-
+obtener_servicio()

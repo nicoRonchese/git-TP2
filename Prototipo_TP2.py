@@ -73,15 +73,17 @@ def creador_de_carpetas_evaluacion(datos_docente:list,datos_alumnos:list,datos_d
 
 def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:list)->None:
     #falta recibir el mail
+    asunto_mail = asunto_mail.split("-")
     for fila in datos_alumnos:
-        if fila[1] == asunto_mail:
+        if fila[1] == asunto_mail[1]:
             nombre_alumno = fila[0]
     for fila in datos_docente_alumno:
         if fila[1] == nombre_alumno:
             nombre_docente = fila[0]
     direccion = os.getcwd()
-    direccion = os.path.join("evaluacion",nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
-    shutil.move("nombre_archivo", direccion)#cambiar nombre_archivo por lo que reciba por mail
+    direccion = os.path.join(asunto_mail[0],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
+    asunto_mail = "-".join(asunto_mail)
+    shutil.move(asunto_mail, direccion)#cambiar nombre_archivo por lo que reciba por mail
 
 def api_de_gmail()->None:
     servicio=obtener_servicio()
@@ -106,11 +108,7 @@ def api_de_gmail()->None:
 def main():
     datos_docente=list()
     datos_alumnos=list()
-    datos_docente_alumno =list()
-    evaluacion ="evaluaciones"#vendria el asunto del mail
-    direccion = os.getcwd()
-    direccion = os.path.join(direccion,evaluacion)
-    os.mkdir(evaluacion) 
+    datos_docente_alumno =list()    
     opciones = [
       "Listar archivos de la carpeta actual",
       "Crear una carpeta",
@@ -128,12 +126,17 @@ def main():
         elif opcion==3:
             crear_archivo_carpeta("archivo")
         elif opcion==4:
+            evaluacion ="evaluaciones"#vendria el asunto del mail de los csv
+            direccion = os.getcwd()
+            direccion = os.path.join(direccion,evaluacion)
+            os.mkdir(evaluacion) 
             lector_de_archivos_cvs(datos_docente,"docentes.csv")
             lector_de_archivos_cvs(datos_alumnos,"alumnos.csv")
             lector_de_archivos_cvs(datos_docente_alumno,"docente-alumnos.csv")
             creador_de_carpetas_evaluacion(datos_docente,datos_alumnos,datos_docente_alumno,direccion)
         elif opcion==5:
             api_de_gmail()
+            asignacion_archivos("asunto del mail del alumno",datos_docente_alumno,datos_alumnos)#y nombre del archivo
         opcion = ingresar_opcion(opciones)
                
 

@@ -1,7 +1,10 @@
 import os
 import csv
 import shutil
-
+from service_gmail import obtener_servicio
+import base64
+import zipfile
+ 
 def ingresar_opcion(opciones: list)->int:
     opcion = 0
     for x in range(len(opciones)):
@@ -80,6 +83,26 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
     direccion = os.path.join("evaluacion",nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
     shutil.move("nombre_archivo", direccion)#cambiar nombre_archivo por lo que reciba por mail
 
+def api_de_gmail()->None:
+    servicio=obtener_servicio()
+    results = servicio.users().messages().list(userId='me',labelIds=['INBOX']).execute()
+    mensajes = results.get('messages', id)
+    for mensaje in mensajes:
+        results_2 = servicio.users().messages().get(userId='me',id=mensaje.get('id')).execute()   
+        asunto_del_mail=results_2['payload']['headers']
+        for i in range(len(asunto_del_mail)):
+            if asunto_del_mail[i]['name']=='Subject':
+                encontro_el_asunto=asunto_del_mail[i]['value']
+        asunto_del_mail_dividido=encontro_el_asunto.split('-')
+        if '1ra_Evaluación' in asunto_del_mail_dividido:
+            results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
+            zip=results_3['data']
+            with open('Parciales.zip','wb') as archivo_zip:
+                archivo_zip.write(base64.urlsafe_b64decode(zip))  
+            descomprimir_archivo_zip=zipfile.ZipFile('Parciales.zip','r')
+            descomprimir_archivo_zip.extractall()
+        borrar_mensaje=servicio.users().messages().delete(userId='me',id=results_2.get('id')).execute()
+
 def main():
     datos_docente=list()
     datos_alumnos=list()
@@ -110,7 +133,7 @@ def main():
             lector_de_archivos_cvs(datos_docente_alumno,"docente-alumnos.csv")
             creador_de_carpetas_evaluacion(datos_docente,datos_alumnos,datos_docente_alumno,direccion)
         elif opcion==5:
-            pass 
+            api_de_gmail()
         opcion = ingresar_opcion(opciones)
                
 

@@ -118,8 +118,12 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
     shutil.move(nombre_archivo, direccion)#cambiar nombre_archivo por lo que reciba por mail
 
 def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
+    '''
+   PRE:Recibe las listas para en ellas guardar los asuntos de los csv y de los mails
+   POST:Lee lso mensajes que lista del gmail del usuario para en ellos poder encontrar los nombres en los asuntos que previamente se especificaron, es decir que si el asunto no contiene para los csv(1ra_Evaluación) y para las entregas(Entregas), no va a poder leer el mail para poder descargar los archivos dentro de los mails, decodificarlos y luego extraerlos de sus archivos.zip.Al final elimina el mail que se está analizando para que no lo vuelva a buscar la próxima vez que se quiera actualizar las entregas. 
+    '''
     servicio=obtener_servicio()
-    results = servicio.users().messages().list(userId='me',labelIds=['INBOX']).execute()
+    results = servicio.users().messages().list(userId='me',q='after:2021/07/29',labelIds=['INBOX']).execute()
     mensajes = results.get('messages', id)
     for mensaje in mensajes:
         results_2 = servicio.users().messages().get(userId='me',id=mensaje.get('id')).execute()   
@@ -144,7 +148,11 @@ def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
         borrar_mensaje=servicio.users().messages().delete(userId='me',id=results_2.get('id')).execute()        
     
 
-def descomprimir_archivos(zip:dict)->None:
+def descomprimir_archivos(zip:str)->None:
+    '''
+    PRE:Recibe el url de un archivo .zip.
+    POST:Crea un archivo .zip para escribir en él el archivo que se encuentra en el mail, lo decodifica y después extrae el contenido de ese archivo. 
+    '''
     with open('Archivos.zip','wb') as archivo_zip:
                 archivo_zip.write(base64.urlsafe_b64decode(zip))  
     descomprimir_archivo_zip=zipfile.ZipFile('Archivos.zip','r')

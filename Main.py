@@ -189,7 +189,7 @@ def main():
         elif opcion==5:
             api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
             for i in asuntos_archivos_mails:
-                asignacion_archivos(i,datos_docente_alumno,datos_alumnos)
+                asignacion_archivos(i,datos_docente_alumno)
         opcion = ingresar_opcion(opciones)
                
 

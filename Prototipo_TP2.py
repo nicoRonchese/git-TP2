@@ -104,14 +104,16 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
     #falta recibir el mail y probar
     #falta agregar el camino para los sin asignar
     asunto_mail = asunto_mail.split("-")
-    for fila in datos_alumnos:
-        if fila[1] == asunto_mail[1]:
-            nombre_alumno = fila[0]
+    nombre_alumno = asunto_mail[2]
+    nombre_docente = ""
     for fila in datos_docente_alumno:
         if fila[1] == nombre_alumno:
             nombre_docente = fila[0]
     direccion = os.getcwd()
-    direccion = os.path.join(asunto_mail[0],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
+    if not (nombre_docente == ""):
+        direccion = os.path.join(asunto_mail[0],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
+    else:
+        direccion = os.path.join(asunto_mail[0],"sin asignar","alumnos",nombre_alumno)
     asunto_mail = "-".join(asunto_mail)
     shutil.move(asunto_mail, direccion)#cambiar nombre_archivo por lo que reciba por mail
 
@@ -167,6 +169,7 @@ def main():
         elif opcion==5:
             api_de_gmail()
             asignacion_archivos("asunto del mail del alumno",datos_docente_alumno,datos_alumnos)#y nombre del archivo
+            #hacer un ciclo for cuando esten las listas
         opcion = ingresar_opcion(opciones)
                
 

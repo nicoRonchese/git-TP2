@@ -177,7 +177,6 @@ def main():
         elif opcion==3:
             crear_archivo_carpeta("archivo")
         elif opcion==4:
-            print(asunto_archivos_csv)
             evaluacion = asunto_archivos_csv[0]
             direccion = os.getcwd()
             direccion = os.path.join(direccion,evaluacion)

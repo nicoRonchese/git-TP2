@@ -117,7 +117,7 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
     asunto_mail = "-".join(asunto_mail)
     shutil.move(asunto_mail, direccion)#cambiar nombre_archivo por lo que reciba por mail
 
-def api_de_gmail()->None:
+def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
     servicio=obtener_servicio()
     results = servicio.users().messages().list(userId='me',labelIds=['INBOX']).execute()
     mensajes = results.get('messages', id)
@@ -128,15 +128,27 @@ def api_de_gmail()->None:
             if asunto_del_mail[i]['name']=='Subject':
                 encontro_el_asunto=asunto_del_mail[i]['value']
         asunto_del_mail_dividido=encontro_el_asunto.split('-')
-        if '1ra_Evaluación' in asunto_del_mail_dividido:
-            results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
-            zip=results_3['data']
-            with open('Parciales.zip','wb') as archivo_zip:
-                archivo_zip.write(base64.urlsafe_b64decode(zip))  
-            descomprimir_archivo_zip=zipfile.ZipFile('Parciales.zip','r')
-            descomprimir_archivo_zip.extractall()
-        borrar_mensaje=servicio.users().messages().delete(userId='me',id=results_2.get('id')).execute()
+        encontro_evaluaciones=True
+        while '1ra_Evaluación' in asunto_del_mail_dividido and encontro_evaluaciones==True:
+                results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
+                zip=results_3['data']
+                descomprimir_archivos(zip)
+                asuntos_archivos_mails.append(encontro_el_asunto)
+                encontro_evaluaciones=False                    
+        else:
+            if 'archivos_csv'in asunto_del_mail_dividido:
+                results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
+                zip=results_3['data']
+                descomprimir_archivos(zip)
+                asunto_archivos_csv.append(encontro_el_asunto)
+        borrar_mensaje=servicio.users().messages().delete(userId='me',id=results_2.get('id')).execute()        
+    
 
+def descomprimir_archivos(zip:dict)->None:
+    with open('Archivos.zip','wb') as archivo_zip:
+                archivo_zip.write(base64.urlsafe_b64decode(zip))  
+    descomprimir_archivo_zip=zipfile.ZipFile('Archivos.zip','r')
+    descomprimir_archivo_zip.extractall()    
 def main():
     datos_docente=list()
     datos_alumnos=list()
@@ -149,6 +161,9 @@ def main():
       "Actualizar entregas de alumnos via mail.",
       "salir"
       ]
+    asunto_archivos_csv=[]
+    asuntos_archivos_mails=[]
+    api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
     opcion = ingresar_opcion(opciones)
     while not opcion == 6:
         if opcion==1:
@@ -167,7 +182,7 @@ def main():
             lector_de_archivos_cvs(datos_docente_alumno,"docente-alumnos.csv")
             creador_de_carpetas_evaluacion(datos_docente,datos_alumnos,datos_docente_alumno,direccion)
         elif opcion==5:
-            api_de_gmail()
+            api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
             asignacion_archivos("asunto del mail del alumno",datos_docente_alumno,datos_alumnos)#y nombre del archivo
             #hacer un ciclo for cuando esten las listas
         opcion = ingresar_opcion(opciones)

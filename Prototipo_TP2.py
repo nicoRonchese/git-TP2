@@ -104,18 +104,18 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
     #falta recibir el mail y probar
     #falta agregar el camino para los sin asignar
     asunto_mail = asunto_mail.split("-")
-    nombre_alumno = asunto_mail[2]
+    nombre_alumno = asunto_mail[3]
     nombre_docente = ""
     for fila in datos_docente_alumno:
         if fila[1] == nombre_alumno:
             nombre_docente = fila[0]
     direccion = os.getcwd()
     if not (nombre_docente == ""):
-        direccion = os.path.join(asunto_mail[0],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
+        direccion = os.path.join(asunto_mail[1],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
     else:
-        direccion = os.path.join(asunto_mail[0],"sin asignar","alumnos",nombre_alumno)
-    asunto_mail = "-".join(asunto_mail)
-    shutil.move(asunto_mail, direccion)#cambiar nombre_archivo por lo que reciba por mail
+        direccion = os.path.join(asunto_mail[1],"sin asignar","alumnos",nombre_alumno)
+    nombre_archivo = asunto_mail[2]+"-"+asunto_mail[3]
+    shutil.move(nombre_archivo, direccion)#cambiar nombre_archivo por lo que reciba por mail
 
 def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
     servicio=obtener_servicio()
@@ -129,14 +129,14 @@ def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
                 encontro_el_asunto=asunto_del_mail[i]['value']
         asunto_del_mail_dividido=encontro_el_asunto.split('-')
         encontro_evaluaciones=True
-        while '1ra_Evaluación' in asunto_del_mail_dividido and encontro_evaluaciones==True:
+        while 'Entrega' in asunto_del_mail_dividido and encontro_evaluaciones==True:
                 results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
                 zip=results_3['data']
                 descomprimir_archivos(zip)
                 asuntos_archivos_mails.append(encontro_el_asunto)
                 encontro_evaluaciones=False                    
         else:
-            if 'archivos_csv'in asunto_del_mail_dividido:
+            if '1ra_Evaluación'in asunto_del_mail_dividido:
                 results_3=servicio.users().messages().attachments().get(userId='me',messageId=results_2.get('id'),id=(results_2['payload']['parts'][1]['body']['attachmentId'])).execute()
                 zip=results_3['data']
                 descomprimir_archivos(zip)
@@ -153,6 +153,8 @@ def main():
     datos_docente=list()
     datos_alumnos=list()
     datos_docente_alumno =list()    
+    asunto_archivos_csv=list()
+    asuntos_archivos_mails=list()
     opciones = [
       "Listar archivos de la carpeta actual",
       "Crear una carpeta",
@@ -161,8 +163,6 @@ def main():
       "Actualizar entregas de alumnos via mail.",
       "salir"
       ]
-    asunto_archivos_csv=[]
-    asuntos_archivos_mails=[]
     api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
     opcion = ingresar_opcion(opciones)
     while not opcion == 6:
@@ -173,7 +173,8 @@ def main():
         elif opcion==3:
             crear_archivo_carpeta("archivo")
         elif opcion==4:
-            evaluacion ="evaluaciones"#vendria el asunto del mail de los csv
+            print(asunto_archivos_csv)
+            evaluacion = asunto_archivos_csv[0]
             direccion = os.getcwd()
             direccion = os.path.join(direccion,evaluacion)
             os.mkdir(evaluacion) 
@@ -183,7 +184,8 @@ def main():
             creador_de_carpetas_evaluacion(datos_docente,datos_alumnos,datos_docente_alumno,direccion)
         elif opcion==5:
             api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
-            asignacion_archivos("asunto del mail del alumno",datos_docente_alumno,datos_alumnos)#y nombre del archivo
+            for i in asuntos_archivos_mails:
+                asignacion_archivos(i,datos_docente_alumno,datos_alumnos)#y nombre del archivo
             #hacer un ciclo for cuando esten las listas
         opcion = ingresar_opcion(opciones)
                

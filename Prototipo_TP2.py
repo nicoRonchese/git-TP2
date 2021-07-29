@@ -20,7 +20,6 @@ def listar_carpetas_archivos()->None:
     si en la carpeta actual hay carpetas repetira el proceso pero con un | para indicar que son subcarpetas.
     ests se hara nuevamente 
     '''
-    #acortar en lo posible
     direccion = os.getcwd()
     lista = os.listdir(direccion)
     for carpeta in lista:
@@ -76,7 +75,6 @@ def creador_de_carpetas_evaluacion(datos_docente:list,datos_alumnos:list,datos_d
     POST:crea carpetas con diferentes niveles de anidacion. Primero una con los docentes con alumnos asigandos,
     luego una carpeta para los no asignados donde se divide entre docentes y alumnos 
     '''
-    #acortar en lo posible
     alumnos_asignados =list()
     for i in range(len(datos_docente_alumno)):
         if len(datos_docente_alumno[i]) == 2:
@@ -94,15 +92,13 @@ def creador_de_carpetas_evaluacion(datos_docente:list,datos_alumnos:list,datos_d
             dirreccion_alumnos_sin_asignar = os.path.join(direccion,"sin asignar","alumnos",datos_alumnos[i][0])
             os.makedirs(dirreccion_alumnos_sin_asignar,exist_ok=True)
 
-def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:list)->None:
+def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list)->None:
     '''
-    PRE:datos_alumnos y datos_docente_alumno deben ser listas con datos previamente obtenidos y 
+    PRE:datos_docente_alumno debe ser una lista con datos previamente obtenidos y 
     asunto mail debe ser un str de formato : 'nombre evaluacion'-padron-apellido,nombre
     deben haberse ya creado las carpetas de evaluacion
     POST:mueve los archivos a su carpeta correspondiente
     '''
-    #falta recibir el mail y probar
-    #falta agregar el camino para los sin asignar
     asunto_mail = asunto_mail.split("-")
     nombre_alumno = asunto_mail[3]
     nombre_docente = ""
@@ -111,11 +107,11 @@ def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:
             nombre_docente = fila[0]
     direccion = os.getcwd()
     if not (nombre_docente == ""):
-        direccion = os.path.join(asunto_mail[1],nombre_docente,nombre_alumno)#falta agregar el nombre de la evaluacion
+        direccion = os.path.join(asunto_mail[1],nombre_docente,nombre_alumno)
     else:
         direccion = os.path.join(asunto_mail[1],"sin asignar","alumnos",nombre_alumno)
     nombre_archivo = asunto_mail[2]+"-"+asunto_mail[3]
-    shutil.move(nombre_archivo, direccion)#cambiar nombre_archivo por lo que reciba por mail
+    shutil.move(nombre_archivo, direccion)
 
 def api_de_gmail(asunto_archivos_csv:list,asuntos_archivos_mails:list)->None:
     '''
@@ -193,8 +189,7 @@ def main():
         elif opcion==5:
             api_de_gmail(asunto_archivos_csv,asuntos_archivos_mails)
             for i in asuntos_archivos_mails:
-                asignacion_archivos(i,datos_docente_alumno,datos_alumnos)#y nombre del archivo
-            #hacer un ciclo for cuando esten las listas
+                asignacion_archivos(i,datos_docente_alumno,datos_alumnos)
         opcion = ingresar_opcion(opciones)
                
 

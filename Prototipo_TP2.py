@@ -15,6 +15,11 @@ def ingresar_opcion(opciones: list)->int:
     return int(opcion)
 
 def listar_carpetas_archivos()->None:
+    '''
+    POST:imprime en la terminal todas las carpetas de la carpeta en la que uno se encuentra,
+    si en la carpeta actual hay carpetas repetira el proceso pero con un | para indicar que son subcarpetas.
+    ests se hara nuevamente 
+    '''
     #acortar en lo posible
     direccion = os.getcwd()
     lista = os.listdir(direccion)
@@ -32,11 +37,18 @@ def listar_carpetas_archivos()->None:
                         print(" |",carpeta2)
 
 def crear_archivo_carpeta(archivo_carpeta:str)->None:
+    '''
+    PRE:archivo carpeta debe ser una str de valor: carpeta o archivo
+    POST:crea un archivo o carpeta sin repetir nombre con los ya existentes en el directorio
+    '''
+    direccion = os.getcwd()
+    lista = os.listdir(direccion)
+    nombre = input("cual es el nombre de la %s?"%archivo_carpeta)
+    while nombre in lista:
+        nombre = input("cual es el nombre de la %s?"%archivo_carpeta)
     if archivo_carpeta == "carpeta":
-        nombre = input("cual es el nombre de la carpeta?")
         os.mkdir(nombre)
-    else:#falta agregar diferentes tipos de archivo
-        nombre = input("cual es el nombre del archivo?")
+    else:
         extencion = input("indeque la exrencion del archivo(.csv,.json,.bin):")
         archivo = nombre+extencion
         if extencion == (".csv" or ".json"):
@@ -45,7 +57,12 @@ def crear_archivo_carpeta(archivo_carpeta:str)->None:
             open(archivo,'wb')
 
 def lector_de_archivos_cvs(datos:list,archivo:str)->None:
-    with open(archivo,'r', newline='', encoding="UTF-8") as archivo_csv:
+   '''
+   PRE:Datos debe ser una lista vacia y
+   archivo debe ser una str que representa un archivo csv en la misma carpeta
+   POST:Datos tendra toda la informacion en el archivo csv separada por lineas
+   '''
+   with open(archivo,'r', newline='', encoding="UTF-8") as archivo_csv:
         csv_reader = csv.reader(archivo_csv, delimiter=',')
         next(csv_reader) 
         for row in csv_reader:
@@ -53,6 +70,12 @@ def lector_de_archivos_cvs(datos:list,archivo:str)->None:
             datos.append(row)
 
 def creador_de_carpetas_evaluacion(datos_docente:list,datos_alumnos:list,datos_docente_alumno :list,direccion:str)->None:
+    '''
+    PRE:datos_docente, datos_alumnos y datos_docente_alumno deben ser listas con datos previamente obtenidosy 
+    direccion una str con la direccion de la carpeta actual
+    POST:crea carpetas con diferentes niveles de anidacion. Primero una con los docentes con alumnos asigandos,
+    luego una carpeta para los no asignados donde se divide entre docentes y alumnos 
+    '''
     #acortar en lo posible
     alumnos_asignados =list()
     for i in range(len(datos_docente_alumno)):
@@ -72,7 +95,14 @@ def creador_de_carpetas_evaluacion(datos_docente:list,datos_alumnos:list,datos_d
             os.makedirs(dirreccion_alumnos_sin_asignar,exist_ok=True)
 
 def asignacion_archivos(asunto_mail:str,datos_docente_alumno:list,datos_alumnos:list)->None:
-    #falta recibir el mail
+    '''
+    PRE:datos_alumnos y datos_docente_alumno deben ser listas con datos previamente obtenidos y 
+    asunto mail debe ser un str de formato : 'nombre evaluacion'-padron-apellido,nombre
+    deben haberse ya creado las carpetas de evaluacion
+    POST:mueve los archivos a su carpeta correspondiente
+    '''
+    #falta recibir el mail y probar
+    #falta agregar el camino para los sin asignar
     asunto_mail = asunto_mail.split("-")
     for fila in datos_alumnos:
         if fila[1] == asunto_mail[1]:
